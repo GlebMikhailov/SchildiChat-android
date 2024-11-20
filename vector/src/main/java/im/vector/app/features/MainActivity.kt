@@ -89,9 +89,12 @@ class MainActivity : VectorBaseActivity<ActivityMainBinding>(), UnlockedActivity
         private const val EXTRA_NEXT_INTENT = "EXTRA_NEXT_INTENT"
         private const val EXTRA_INIT_SESSION = "EXTRA_INIT_SESSION"
         private const val EXTRA_ROOM_ID = "EXTRA_ROOM_ID"
-        private const val EXTRA_CALL_ID = "EXTRA_CALL_ID"
         private const val ACTION_ROOM_DETAILS_FROM_SHORTCUT = "ROOM_DETAILS_FROM_SHORTCUT"
+
+        // SC start
+        private const val EXTRA_CALL_ID = "EXTRA_CALL_ID"
         private const val ACTION_ROOM_DETAILS_JITSI_CALL = "ROOM_DETAILS_JITSI_CALL"
+        // SC end
 
         // Special action to clear cache and/or clear credentials
         fun restartApp(activity: Activity, args: MainActivityArgs) {
