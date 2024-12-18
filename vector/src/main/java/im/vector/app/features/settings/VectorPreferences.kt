@@ -1,8 +1,17 @@
 /*
- * Copyright 2018-2024 New Vector Ltd.
+ * Copyright 2018 New Vector Ltd
  *
- * SPDX-License-Identifier: AGPL-3.0-only
- * Please see LICENSE in the repository root for full details.
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
  */
 package im.vector.app.features.settings
 
@@ -76,6 +85,7 @@ class VectorPreferences @Inject constructor(
         const val SETTINGS_LABS_NEW_SESSION_MANAGER_KEY = "SETTINGS_LABS_NEW_SESSION_MANAGER_KEY"
         const val SETTINGS_LABS_CLIENT_INFO_RECORDING_KEY = "SETTINGS_LABS_CLIENT_INFO_RECORDING_KEY"
         const val SETTINGS_LABS_VOICE_BROADCAST_KEY = "SETTINGS_LABS_VOICE_BROADCAST_KEY"
+        const val SETTINGS_LABS_JITSI_CALL_NOTIFICATION_KEY = "SETTINGS_LABS_JITSI_CALL_NOTIFICATION_KEY"
         const val SETTINGS_CRYPTOGRAPHY_PREFERENCE_KEY = "SETTINGS_CRYPTOGRAPHY_PREFERENCE_KEY"
         const val SETTINGS_CRYPTOGRAPHY_DIVIDER_PREFERENCE_KEY = "SETTINGS_CRYPTOGRAPHY_DIVIDER_PREFERENCE_KEY"
         const val SETTINGS_CRYPTOGRAPHY_MANAGE_PREFERENCE_KEY = "SETTINGS_CRYPTOGRAPHY_MANAGE_PREFERENCE_KEY"
@@ -1586,6 +1596,11 @@ class VectorPreferences @Inject constructor(
                         SETTINGS_LABS_VOICE_BROADCAST_KEY,
                         getDefault(im.vector.app.config.R.bool.settings_labs_enable_voice_broadcast_default)
                 )
+    }
+
+    fun isJitsiCallNotificationEnabled(): Boolean {
+        return vectorFeatures.isJitsiCallNotificationEnabled() &&
+                defaultPrefs.getBoolean(SETTINGS_LABS_JITSI_CALL_NOTIFICATION_KEY, getDefault(im.vector.app.config.R.bool.settings_labs_enable_jitsi_call_notifications_default))
     }
 
     fun showIpAddressInSessionManagerScreens(): Boolean {

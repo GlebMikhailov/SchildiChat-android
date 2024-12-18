@@ -1,8 +1,17 @@
 /*
- * Copyright 2019-2024 New Vector Ltd.
+ * Copyright 2019 New Vector Ltd
  *
- * SPDX-License-Identifier: AGPL-3.0-only
- * Please see LICENSE in the repository root for full details.
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ * http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
  */
 
 package im.vector.app.features
@@ -33,6 +42,7 @@ import im.vector.app.features.home.room.detail.RoomDetailActivity
 import im.vector.app.features.home.room.threads.ThreadsActivity
 import im.vector.app.features.location.live.map.LiveLocationMapViewActivity
 import im.vector.app.features.notifications.NotificationDrawerManager
+import im.vector.app.features.notifications.NotificationUtils
 import im.vector.app.features.pin.UnlockedActivity
 import im.vector.app.features.pin.lockscreen.crypto.LockScreenKeyRepository
 import im.vector.app.features.pin.lockscreen.pincode.PinCodeHelper
@@ -79,7 +89,9 @@ class MainActivity : VectorBaseActivity<ActivityMainBinding>(), UnlockedActivity
         private const val EXTRA_NEXT_INTENT = "EXTRA_NEXT_INTENT"
         private const val EXTRA_INIT_SESSION = "EXTRA_INIT_SESSION"
         private const val EXTRA_ROOM_ID = "EXTRA_ROOM_ID"
+        private const val EXTRA_CALL_ID = "EXTRA_CALL_ID"
         private const val ACTION_ROOM_DETAILS_FROM_SHORTCUT = "ROOM_DETAILS_FROM_SHORTCUT"
+        private const val ACTION_ROOM_DETAILS_JITSI_CALL = "ROOM_DETAILS_JITSI_CALL"
 
         // Special action to clear cache and/or clear credentials
         fun restartApp(activity: Activity, args: MainActivityArgs) {
@@ -110,6 +122,20 @@ class MainActivity : VectorBaseActivity<ActivityMainBinding>(), UnlockedActivity
             }
         }
 
+        fun jitsiCallIntent(
+                context: Context,
+                roomId: String,
+                callId: String,
+        ): Intent {
+            return Intent(context, MainActivity::class.java).apply {
+                action = ACTION_ROOM_DETAILS_JITSI_CALL
+                flags = Intent.FLAG_ACTIVITY_NEW_TASK
+
+                putExtra(EXTRA_ROOM_ID, roomId)
+                putExtra(EXTRA_CALL_ID, callId)
+            }
+        }
+
         val allowList = listOf(
                 HomeActivity::class.java.name,
                 MainActivity::class.java.name,
@@ -128,6 +154,7 @@ class MainActivity : VectorBaseActivity<ActivityMainBinding>(), UnlockedActivity
     private lateinit var args: MainActivityArgs
 
     @Inject lateinit var notificationDrawerManager: NotificationDrawerManager
+    @Inject lateinit var notificationUtils: NotificationUtils
     @Inject lateinit var uiStateRepository: UiStateRepository
     @Inject lateinit var shortcutsHandler: ShortcutsHandler
     @Inject lateinit var pinCodeHelper: PinCodeHelper
@@ -195,6 +222,17 @@ class MainActivity : VectorBaseActivity<ActivityMainBinding>(), UnlockedActivity
             setResult(RESULT_OK)
             finish()
         } else if (intent.action == ACTION_ROOM_DETAILS_FROM_SHORTCUT) {
+            startSyncing()
+            val roomId = intent.getStringExtra(EXTRA_ROOM_ID)
+            if (roomId?.isNotEmpty() == true) {
+                navigator.openRoom(this, roomId, trigger = ViewRoom.Trigger.Shortcut)
+            }
+            finish()
+        } else if (intent.action == ACTION_ROOM_DETAILS_JITSI_CALL) {
+            val callId = intent.getStringExtra(EXTRA_CALL_ID).orEmpty()
+
+            notificationUtils.cancelNotificationMessage(callId, NotificationDrawerManager.JITSI_CALL_NOTIFICATION_ID)
+
             startSyncing()
             val roomId = intent.getStringExtra(EXTRA_ROOM_ID)
             if (roomId?.isNotEmpty() == true) {
