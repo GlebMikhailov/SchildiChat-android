@@ -178,7 +178,7 @@ import im.vector.app.features.media.AttachmentData
 import im.vector.app.features.media.ImageContentRenderer
 import im.vector.app.features.media.VideoContentRenderer
 import im.vector.app.features.notifications.NotificationDrawerManager
-import im.vector.app.features.notifications.NotificationUtils
+import im.vector.app.features.notifications.utils.NotificationUtils
 import im.vector.app.features.permalink.NavigationInterceptor
 import im.vector.app.features.permalink.PermalinkFactory
 import im.vector.app.features.permalink.PermalinkHandler
@@ -2449,7 +2449,7 @@ class TimelineFragment :
                 (!enabled &&
                         !views.timelineRecyclerView.canScrollVertically(1) &&
                         !timelineViewModel.timeline?.hasMoreToLoad(Timeline.Direction.FORWARDS).orFalse()
-                )
+                        )
         scrollOnNewMessageCallback.initialForceScroll = enabled
         if (shouldStickToBottom) {
             layoutManager.disablePreferredAnchorPlacement()

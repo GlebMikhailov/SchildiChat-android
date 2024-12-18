@@ -1,9 +1,18 @@
 /*
- * Copyright 2020-2024 New Vector Ltd.
  * Copyright 2019 New Vector Ltd
+ * Copyright 2020 New Vector Ltd
  *
- * SPDX-License-Identifier: AGPL-3.0-only
- * Please see LICENSE in the repository root for full details.
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
  */
 
 package im.vector.app.core.services
@@ -22,14 +31,13 @@ import im.vector.app.core.extensions.singletonEntryPoint
 import im.vector.app.core.extensions.startForegroundCompat
 import im.vector.app.features.call.CallArgs
 import im.vector.app.features.call.VectorCallActivity
-import im.vector.app.features.call.audio.MicrophoneAccessService
 import im.vector.app.features.call.telecom.CallConnection
 import im.vector.app.features.call.webrtc.WebRtcCall
 import im.vector.app.features.call.webrtc.WebRtcCallManager
 import im.vector.app.features.call.webrtc.getOpponentAsMatrixItem
 import im.vector.app.features.displayname.getBestName
 import im.vector.app.features.home.AvatarRenderer
-import im.vector.app.features.notifications.NotificationUtils
+import im.vector.app.features.notifications.utils.NotificationUtils
 import im.vector.app.features.popup.IncomingCallAlert
 import im.vector.app.features.popup.PopupAlertManager
 import im.vector.lib.core.utils.compat.getParcelableExtraCompat
@@ -168,7 +176,7 @@ class CallAndroidService : VectorAndroidService() {
             contentAction = Runnable { showCallScreen(call, VectorCallActivity.INCOMING_RINGING) }
         }
         alertManager.postVectorAlert(incomingCallAlert)
-        val notification = notificationUtils.buildIncomingCallNotification(
+        val notification = notificationUtils.builderUtils.buildIncomingCallNotification(
                 call = call,
                 title = callInformation.opponentMatrixItem?.getBestName() ?: callInformation.opponentUserId,
                 fromBg = fromBg
@@ -192,7 +200,7 @@ class CallAndroidService : VectorAndroidService() {
             handleUnexpectedState(callId)
             return
         }
-        val notification = notificationUtils.buildCallEndedNotification(false)
+        val notification = notificationUtils.builderUtils.buildCallEndedNotification(false)
         val notificationId = callId.hashCode()
         startForegroundCompat(notificationId, notification)
         if (knownCalls.isEmpty()) {
@@ -200,13 +208,10 @@ class CallAndroidService : VectorAndroidService() {
             stopForegroundCompat()
             mediaSession?.isActive = false
             myStopSelf()
-
-            // Also stop the microphone service if it is running
-            stopService(Intent(this, MicrophoneAccessService::class.java))
         }
         val wasConnected = connectedCallIds.remove(callId)
         if (!wasConnected && !terminatedCall.isOutgoing && !rejected && endCallReason != EndCallReason.ANSWERED_ELSEWHERE) {
-            val missedCallNotification = notificationUtils.buildCallMissedNotification(terminatedCall)
+            val missedCallNotification = notificationUtils.builderUtils.buildCallMissedNotification(terminatedCall)
             notificationManager.notify(MISSED_CALL_TAG, terminatedCall.nativeRoomId.hashCode(), missedCallNotification)
         }
     }
@@ -227,7 +232,7 @@ class CallAndroidService : VectorAndroidService() {
         }
         val callInformation = call.toCallInformation()
         Timber.tag(loggerTag.value).v("displayOutgoingCallNotification : display the dedicated notification")
-        val notification = notificationUtils.buildOutgoingRingingCallNotification(
+        val notification = notificationUtils.builderUtils.buildOutgoingRingingCallNotification(
                 call = call,
                 title = callInformation.opponentMatrixItem?.getBestName() ?: callInformation.opponentUserId
         )
@@ -251,7 +256,7 @@ class CallAndroidService : VectorAndroidService() {
         }
         alertManager.cancelAlert(callId)
         val callInformation = call.toCallInformation()
-        val notification = notificationUtils.buildPendingCallNotification(
+        val notification = notificationUtils.builderUtils.buildPendingCallNotification(
                 call = call,
                 title = callInformation.opponentMatrixItem?.getBestName() ?: callInformation.opponentUserId
         )
@@ -267,7 +272,7 @@ class CallAndroidService : VectorAndroidService() {
         Timber.tag(loggerTag.value).v("Fallback to clear everything")
         callRingPlayerIncoming?.stop()
         callRingPlayerOutgoing?.stop()
-        val notification = notificationUtils.buildCallEndedNotification(false)
+        val notification = notificationUtils.builderUtils.buildCallEndedNotification(false)
         if (callId != null) {
             startForegroundCompat(callId.hashCode(), notification)
         } else {
